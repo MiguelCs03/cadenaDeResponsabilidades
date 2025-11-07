@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Procesamiento de Pedidos - Chain of Responsibility</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        
+
+        <!-- Formulario de Pedido -->
+        <div class="form-container">
+            <h2>Crear Nuevo Pedido</h2>
+            
+            <div class="form-group">
+                <label>Producto:</label>
+                <input type="text" id="producto" value="Laptop HP" placeholder="Nombre del producto">
+            </div>
+            
+            <div class="form-group">
+                <label>Cantidad:</label>
+                <input type="number" id="cantidad" value="2" min="1" placeholder="Cantidad">
+            </div>
+            
+            <div class="form-group">
+                <label>Stock Disponible:</label>
+                <input type="number" id="stock" value="5" min="0" placeholder="Stock disponible">
+            </div>
+            
+            <div class="form-group">
+                <label>Monto Total ($):</label>
+                <input type="number" id="monto" value="2000" min="0" placeholder="Monto total">
+            </div>
+            
+            <div class="form-group">
+                <label>Tarjeta (últimos 4 dígitos):</label>
+                <input type="text" id="tarjeta" value="1234" maxlength="4" placeholder="1234">
+            </div>
+            
+            <div class="form-group">
+                <label>ID Usuario:</label>
+                <input type="number" id="usuario_id" value="12345" placeholder="ID Usuario">
+            </div>
+            
+            <button class="btn btn-primary" onclick="procesarPedido()">
+                 Procesar Pedido
+            </button>
+            
+            <button class="btn btn-secondary" onclick="resetear()">
+                 Resetear
+            </button>
+        </div>
+
+        <!-- Cadena de Responsabilidad Visual -->
+        <div class="chain-container">
+            <h2>Cadena de Responsabilidad</h2>
+            
+            <div class="chain">
+                <!-- Caja 1: Inventario -->
+                <div class="handler-box" id="box-inventario">
+                    <div class="handler-header">
+                        <span class="handler-icon">📦</span>
+                        <span class="handler-title">Inventario</span>
+                    </div>
+                    <div class="handler-status" id="status-inventario">Pendiente</div>
+                    <div class="handler-details" id="details-inventario"></div>
+                </div>
+
+                <!-- Flecha -->
+                <div class="arrow">→</div>
+
+                <!-- Caja 2: Fraude -->
+                <div class="handler-box" id="box-fraude">
+                    <div class="handler-header">
+                        <span class="handler-icon">🛡️</span>
+                        <span class="handler-title">Fraude</span>
+                    </div>
+                    <div class="handler-status" id="status-fraude">Pendiente</div>
+                    <div class="handler-details" id="details-fraude"></div>
+                </div>
+
+                <!-- Flecha -->
+                <div class="arrow">→</div>
+
+                <!-- Caja 3: Pago -->
+                <div class="handler-box" id="box-pago">
+                    <div class="handler-header">
+                        <span class="handler-icon">💳</span>
+                        <span class="handler-title">Pago</span>
+                    </div>
+                    <div class="handler-status" id="status-pago">Pendiente</div>
+                    <div class="handler-details" id="details-pago"></div>
+                </div>
+
+                <!-- Flecha -->
+                <div class="arrow">→</div>
+
+                <!-- Caja 4: Envío -->
+                <div class="handler-box" id="box-envio">
+                    <div class="handler-header">
+                        <span class="handler-icon">🚚</span>
+                        <span class="handler-title">Envío</span>
+                    </div>
+                    <div class="handler-status" id="status-envio">Pendiente</div>
+                    <div class="handler-details" id="details-envio"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resultado -->
+        <div class="result-container" id="result-container" style="display: none;">
+            <h3 id="result-title">Resultado</h3>
+            <div id="result-content"></div>
+        </div>
+    </div>
+
+    <script>
+        const pasos = ['inventario', 'fraude', 'pago', 'envio'];
+        let procesando = false;
+
+        function resetear() {
+            // Resetear todas las cajas
+            pasos.forEach(paso => {
+                const box = document.getElementById(`box-${paso}`);
+                const status = document.getElementById(`status-${paso}`);
+                const details = document.getElementById(`details-${paso}`);
+                
+                box.className = 'handler-box';
+                status.textContent = 'Pendiente';
+                details.textContent = '';
+            });
+
+            // Ocultar resultado
+            document.getElementById('result-container').style.display = 'none';
+            procesando = false;
+        }
+
+        async function procesarPedido() {
+            if (procesando) return;
+            procesando = true;
+
+            // Resetear primero
+            resetear();
+
+            // Obtener datos del formulario
+            const producto = document.getElementById('producto').value;
+            const cantidad = parseInt(document.getElementById('cantidad').value);
+            const stock = parseInt(document.getElementById('stock').value);
+            const monto = parseFloat(document.getElementById('monto').value);
+            const tarjeta = document.getElementById('tarjeta').value;
+            const usuario_id = parseInt(document.getElementById('usuario_id').value);
+
+            const pedido = {
+                items: [{
+                    producto: producto,
+                    cantidad: cantidad,
+                    stock: stock
+                }],
+                datos_pago: {
+                    monto: monto,
+                    tarjeta: tarjeta,
+                    usuario_id: usuario_id
+                }
+            };
+
+            // Procesar paso a paso
+            for (let i = 0; i < pasos.length; i++) {
+                const paso = pasos[i];
+                
+                // Marcar como procesando
+                actualizarCaja(paso, 'procesando', 'Procesando...');
+                
+                // Esperar un poco para efecto visual
+                await sleep(800);
+
+                try {
+                    // Llamar al backend
+                    const response = await fetch('/procesar_paso', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            ...pedido,
+                            paso: i
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        const resultado = data.pedido;
+                        
+                        // Verificar si este paso se completó
+                        if (resultado.pasos_completados.includes(data.nombre_paso)) {
+                            actualizarCaja(paso, 'completado', '✓ Completado');
+                        } else {
+                            // Hubo error
+                            const errores = resultado.errores.join(', ');
+                            actualizarCaja(paso, 'error', `✗ Error: ${errores}`);
+                            mostrarResultado('error', resultado);
+                            procesando = false;
+                            return;
+                        }
+                    }
+                } catch (error) {
+                    actualizarCaja(paso, 'error', `✗ Error: ${error.message}`);
+                    procesando = false;
+                    return;
+                }
+            }
+
+            // Si llegamos aquí, todo salió bien
+            mostrarResultado('success', { estado: 'Completado', pasos_completados: pasos, errores: [] });
+            procesando = false;
+        }
+
+        function actualizarCaja(paso, estado, mensaje) {
+            const box = document.getElementById(`box-${paso}`);
+            const status = document.getElementById(`status-${paso}`);
+            const details = document.getElementById(`details-${paso}`);
+            
+            box.className = `handler-box ${estado}`;
+            status.textContent = mensaje;
+        }
+
+        function mostrarResultado(tipo, pedido) {
+            const container = document.getElementById('result-container');
+            const title = document.getElementById('result-title');
+            const content = document.getElementById('result-content');
+            
+            container.style.display = 'block';
+            
+            if (tipo === 'success') {
+                title.textContent = '✅ Pedido Completado con Éxito';
+                title.style.color = '#27ae60';
+                content.innerHTML = `
+                    <p><strong>Estado:</strong> ${pedido.estado}</p>
+                    <p><strong>Pasos completados:</strong> ${pedido.pasos_completados.length}/4</p>
+                    <p style="color: #27ae60;">¡El pedido ha sido procesado correctamente y está listo para envío!</p>
+                `;
+            } else {
+                title.textContent = '❌ Pedido Rechazado';
+                title.style.color = '#e74c3c';
+                content.innerHTML = `
+                    <p><strong>Estado:</strong> ${pedido.estado}</p>
+                    <p><strong>Errores:</strong></p>
+                    <ul>
+                        ${pedido.errores.map(e => `<li>${e}</li>`).join('')}
+                    </ul>
+                `;
+            }
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+    </script>
+</body>
+</html>
