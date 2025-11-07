@@ -1,7 +1,4 @@
-"""
-Aplicación Flask para el sistema de procesamiento de pedidos
-con patrón Chain of Responsibility
-"""
+
 from flask import Flask, render_template, request, jsonify
 from pedido import Pedido
 from manejadores import (
@@ -84,14 +81,14 @@ def procesar_paso():
         
         nombres_pasos = ["Inventario", "Fraude", "Pago", "Envío"]
         
-        # Procesar hasta el paso actual
+        
         for i in range(paso_actual + 1):
             if i < len(manejadores):
                 # Crear cadena temporal solo con el manejador actual
                 manejador = manejadores[i]
                 manejador.procesar(pedido)
                 
-                # Si hay error, detener
+                
                 if pedido.errores:
                     break
         
@@ -110,7 +107,5 @@ def procesar_paso():
 
 
 if __name__ == '__main__':
-    print("🚀 Iniciando servidor Flask...")
-    print("📦 Sistema de Procesamiento de Pedidos - Chain of Responsibility")
-    print("🌐 Abre tu navegador en: http://localhost:5000")
+    print(" http://localhost:5000")
     app.run(debug=True, port=5000)
