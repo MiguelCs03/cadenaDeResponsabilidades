@@ -1,6 +1,4 @@
-"""
-Implementación del patrón Chain of Responsibility para procesamiento de pedidos
-"""
+
 from abc import ABC, abstractmethod
 from pedido import Pedido
 import time
@@ -20,8 +18,8 @@ class ManejadorPedido(ABC):
         pass
 
 
-class BaseManejadorPedido(ManejadorPedido):
-    """Clase base que implementa la lógica de encadenamiento"""
+class ManejadorInventario(ManejadorPedido):
+    """Manejador que verifica el inventario"""
     
     def __init__(self):
         self._siguiente_manejador: ManejadorPedido = None
@@ -30,15 +28,6 @@ class BaseManejadorPedido(ManejadorPedido):
         """Establece el siguiente manejador en la cadena"""
         self._siguiente_manejador = manejador
         return manejador
-    
-    def procesar(self, pedido: Pedido) -> None:
-        """Lógica para pasar al siguiente si existe"""
-        if self._siguiente_manejador:
-            self._siguiente_manejador.procesar(pedido)
-
-
-class ManejadorInventario(BaseManejadorPedido):
-    """Manejador que verifica el inventario"""
     
     def procesar(self, pedido: Pedido) -> None:
         """Verifica que hay suficiente stock para todos los items"""
@@ -63,11 +52,20 @@ class ManejadorInventario(BaseManejadorPedido):
             pedido.agregar_paso_completado("Inventario")
             print(" Inventario verificado")
             # Solo continuar si no hay errores
-            super().procesar(pedido)
+            if self._siguiente_manejador:
+                self._siguiente_manejador.procesar(pedido)
 
 
-class ManejadorFraude(BaseManejadorPedido):
+class ManejadorFraude(ManejadorPedido):
     """Manejador que detecta posibles fraudes"""
+    
+    def __init__(self):
+        self._siguiente_manejador: ManejadorPedido = None
+    
+    def set_siguiente(self, manejador: ManejadorPedido) -> ManejadorPedido:
+        """Establece el siguiente manejador en la cadena"""
+        self._siguiente_manejador = manejador
+        return manejador
     
     def procesar(self, pedido: Pedido) -> None:
         """Verifica si el pedido es fraudulento"""
@@ -100,11 +98,20 @@ class ManejadorFraude(BaseManejadorPedido):
         else:
             pedido.agregar_paso_completado("Fraude")
             print(" Sin fraude detectado")
-            super().procesar(pedido)
+            if self._siguiente_manejador:
+                self._siguiente_manejador.procesar(pedido)
 
 
-class ManejadorPago(BaseManejadorPedido):
+class ManejadorPago(ManejadorPedido):
     """Manejador que procesa el pago"""
+    
+    def __init__(self):
+        self._siguiente_manejador: ManejadorPedido = None
+    
+    def set_siguiente(self, manejador: ManejadorPedido) -> ManejadorPedido:
+        """Establece el siguiente manejador en la cadena"""
+        self._siguiente_manejador = manejador
+        return manejador
     
     def procesar(self, pedido: Pedido) -> None:
         """Procesa el pago del pedido"""
@@ -126,21 +133,28 @@ class ManejadorPago(BaseManejadorPedido):
         else:
             pedido.agregar_paso_completado("Pago")
             print(" Pago procesado")
-            super().procesar(pedido)
+            if self._siguiente_manejador:
+                self._siguiente_manejador.procesar(pedido)
 
 
-class ManejadorEnvio(BaseManejadorPedido):
+class ManejadorEnvio(ManejadorPedido):
     """Manejador que gestiona el envío"""
+    
+    def __init__(self):
+        self._siguiente_manejador: ManejadorPedido = None
+    
+    def set_siguiente(self, manejador: ManejadorPedido) -> ManejadorPedido:
+        """Establece el siguiente manejador en la cadena"""
+        self._siguiente_manejador = manejador
+        return manejador
     
     def procesar(self, pedido: Pedido) -> None:
         """Procesa el envío del pedido"""
         print(" Procesando envío...")
         time.sleep(0.5)  # Simular procesamiento
         
-        
         pedido.agregar_paso_completado("Envío")
         pedido.estado = "Completado"
         print(" Envío procesado - ¡Pedido completado!")
         
         # Este es el último, no hay siguiente
-        # super().procesar(pedido) - no llamamos al siguiente

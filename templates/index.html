@@ -61,7 +61,7 @@
                 <!-- Caja 1: Inventario -->
                 <div class="handler-box" id="box-inventario">
                     <div class="handler-header">
-                        <span class="handler-icon">📦</span>
+                        <span class="handler-icon"></span>
                         <span class="handler-title">Inventario</span>
                     </div>
                     <div class="handler-status" id="status-inventario">Pendiente</div>
@@ -74,7 +74,7 @@
                 <!-- Caja 2: Fraude -->
                 <div class="handler-box" id="box-fraude">
                     <div class="handler-header">
-                        <span class="handler-icon">🛡️</span>
+                        <span class="handler-icon"></span>
                         <span class="handler-title">Fraude</span>
                     </div>
                     <div class="handler-status" id="status-fraude">Pendiente</div>
@@ -87,7 +87,7 @@
                 <!-- Caja 3: Pago -->
                 <div class="handler-box" id="box-pago">
                     <div class="handler-header">
-                        <span class="handler-icon">💳</span>
+                        <span class="handler-icon"></span>
                         <span class="handler-title">Pago</span>
                     </div>
                     <div class="handler-status" id="status-pago">Pendiente</div>
@@ -100,7 +100,7 @@
                 <!-- Caja 4: Envío -->
                 <div class="handler-box" id="box-envio">
                     <div class="handler-header">
-                        <span class="handler-icon">🚚</span>
+                        <span class="handler-icon"></span>
                         <span class="handler-title">Envío</span>
                     </div>
                     <div class="handler-status" id="status-envio">Pendiente</div>
@@ -234,7 +234,7 @@
             container.style.display = 'block';
             
             if (tipo === 'success') {
-                title.textContent = '✅ Pedido Completado con Éxito';
+                title.textContent = ' Pedido Completado con Éxito';
                 title.style.color = '#27ae60';
                 content.innerHTML = `
                     <p><strong>Estado:</strong> ${pedido.estado}</p>
@@ -242,7 +242,7 @@
                     <p style="color: #27ae60;">¡El pedido ha sido procesado correctamente y está listo para envío!</p>
                 `;
             } else {
-                title.textContent = '❌ Pedido Rechazado';
+                title.textContent = ' Pedido Rechazado';
                 title.style.color = '#e74c3c';
                 content.innerHTML = `
                     <p><strong>Estado:</strong> ${pedido.estado}</p>
