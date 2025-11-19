@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from pedido import Pedido
 import time
 # cadena de responsabilidad para el procesamiento de pedidos
-
+#Miguel Acs
 class ManejadorPedido(ABC):
     """Interfaz para los manejadores de pedidos"""
     
